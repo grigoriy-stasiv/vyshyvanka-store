@@ -1,0 +1,147 @@
+.about-page {
+    background: #f8f5f0;
+    color: #171923;
+}
+
+.about-page__hero {
+    padding: 110px 20px 90px;
+    text-align: center;
+    border-bottom: 1px solid rgba(23, 25, 35, 0.1);
+}
+
+.about-page__container {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.about-page__label {
+    display: inline-block;
+    margin-bottom: 18px;
+    color: #9b1c31;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+}
+
+.about-page__hero h1 {
+    margin: 0 0 24px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(48px, 7vw, 82px);
+    font-weight: 400;
+}
+
+.about-page__hero p {
+    max-width: 680px;
+    margin: 0 auto;
+    font-size: 18px;
+    line-height: 1.8;
+    color: #5f6068;
+}
+
+.about-page__content {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 100px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+}
+
+.about-page__image {
+    overflow: hidden;
+    height: 560px;
+}
+
+.about-page__image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.about-page__text h2 {
+    margin: 0 0 28px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 400;
+    line-height: 1.15;
+}
+
+.about-page__text p {
+    margin: 0 0 20px;
+    color: #5f6068;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.about-page__values {
+    padding: 100px 20px;
+    background: #fff;
+    border-top: 1px solid rgba(23, 25, 35, 0.08);
+}
+
+.about-page__values>.about-page__container {
+    text-align: center;
+}
+
+.about-page__values h2 {
+    margin: 0 0 60px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(36px, 4vw, 52px);
+    font-weight: 400;
+}
+
+.about-page__values-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    text-align: left;
+}
+
+.about-page__value {
+    padding: 35px;
+    border-top: 1px solid rgba(155, 28, 49, 0.4);
+}
+
+.about-page__value>span {
+    display: block;
+    margin-bottom: 25px;
+    color: #9b1c31;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.about-page__value h3 {
+    margin: 0 0 15px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 25px;
+    font-weight: 400;
+}
+
+.about-page__value p {
+    margin: 0;
+    color: #666770;
+    line-height: 1.7;
+}
+
+@media (max-width: 800px) {
+    .about-page__content {
+        grid-template-columns: 1fr;
+        gap: 50px;
+        padding: 70px 20px;
+    }
+
+    .about-page__image {
+        height: 450px;
+    }
+
+    .about-page__values {
+        padding: 70px 20px;
+    }
+
+    .about-page__values-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}

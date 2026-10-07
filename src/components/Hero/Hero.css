@@ -1,0 +1,231 @@
+.hero {
+    min-height: 650px;
+    background: #f8f5f0;
+    overflow: hidden;
+}
+
+.hero__container {
+    max-width: 1400px;
+    min-height: 650px;
+    margin: 0 auto;
+
+    display: grid;
+    grid-template-columns: 45% 55%;
+    align-items: stretch;
+}
+
+.hero__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 70px 40px 70px 70px;
+    position: relative;
+    z-index: 2;
+}
+
+.hero__subtitle {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin-bottom: 28px;
+
+    color: #9b1c31;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.hero__subtitle span {
+    width: 55px;
+    height: 1px;
+    background: #9b1c31;
+}
+
+.hero__title {
+    margin: 0 0 28px;
+
+    color: #171923;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(48px, 5vw, 76px);
+    font-weight: 500;
+    line-height: 1.05;
+}
+
+.hero__description {
+    max-width: 500px;
+    margin-bottom: 35px;
+
+    color: #555;
+    font-size: 18px;
+    line-height: 1.65;
+}
+
+.hero__button {
+    width: fit-content;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 25px;
+
+    padding: 17px 28px;
+
+    background: #9b1c31;
+    color: #fff;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    transition:
+        background 0.3s ease,
+        transform 0.3s ease;
+}
+
+.hero__button:hover {
+    background: #781526;
+    transform: translateY(-2px);
+}
+
+.hero__button span {
+    font-size: 22px;
+}
+
+.hero__advantages {
+    display: flex;
+    align-items: center;
+    gap: 0;
+
+    margin-top: 55px;
+}
+
+.advantage {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 0 25px;
+
+    border-right: 1px solid #cfc8c0;
+}
+
+.advantage:first-child {
+    padding-left: 0;
+}
+
+.advantage:last-child {
+    border-right: none;
+}
+
+.advantage__icon {
+    font-size: 28px;
+    color: #333;
+}
+
+.advantage strong,
+.advantage small {
+    display: block;
+}
+
+.advantage strong {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.advantage small {
+    margin-top: 3px;
+    color: #777;
+    font-size: 13px;
+}
+
+.hero__image {
+    min-height: 700px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero__image {
+    min-height: 700px;
+    overflow: hidden;
+}
+
+.hero__image img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+    object-position: center;
+
+    transition: transform 0.6s ease;
+}
+
+.hero__image:hover img {
+    transform: scale(1.02);
+}
+
+/* Планшет */
+
+@media (max-width: 1000px) {
+    .hero__container {
+        grid-template-columns: 1fr;
+    }
+
+    .hero__content {
+        padding: 80px 40px;
+        text-align: center;
+        align-items: center;
+    }
+
+    .hero__description {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero__subtitle {
+        justify-content: center;
+    }
+
+    .hero__advantages {
+        justify-content: center;
+    }
+
+    .hero__image {
+        height: 650px;
+        min-height: 0;
+    }
+}
+
+/* Телефон */
+
+@media (max-width: 600px) {
+    .hero__content {
+        padding: 60px 20px;
+    }
+
+    .hero__title {
+        font-size: 43px;
+    }
+
+    .hero__description {
+        font-size: 16px;
+    }
+
+    .hero__advantages {
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+    }
+
+    .advantage,
+    .advantage:first-child {
+        padding: 0;
+        border: none;
+    }
+
+    .hero__image {
+        min-height: 400px;
+    }
+}
