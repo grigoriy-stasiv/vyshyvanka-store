@@ -1,11 +1,60 @@
 import { NavLink } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
 import "./Header.css";
 
 function Header() {
   const { cartCount } = useCart();
-const { user, logout } = useAuth();
+  const { user, logout } = useAuth();
+  
+  const [newOrdersCount, setNewOrdersCount] = useState(0);
+
+  useEffect(() => {
+    if (!user || user.role !== "admin") {
+      setNewOrdersCount(0);
+      return;
+    }
+
+    let isActive = true;
+
+    const loadNewOrdersCount = async () => {
+      try {
+        const token = localStorage.getItem("vyshyvanka-token");
+
+        const response = await fetch(
+          "http://localhost:5000/api/orders",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) return;
+
+        const orders = await response.json();
+
+        if (isActive && Array.isArray(orders)) {
+          setNewOrdersCount(
+            orders.filter((order) => order.status === "Нове").length
+          );
+        }
+      } catch (error) {
+        console.error("Помилка завантаження нових замовлень:", error);
+      }
+    };
+
+    loadNewOrdersCount();
+
+    const intervalId = setInterval(loadNewOrdersCount, 5000);
+
+    return () => {
+      isActive = false;
+      clearInterval(intervalId);
+    };
+  }, [user]);
+
   return (
     <header className="header">
       <div className="header__container">
@@ -86,16 +135,35 @@ const { user, logout } = useAuth();
   <>
     <span className="header__user">
       Привіт, {user.name}
-    </span>
+  </span>
+              
+  <NavLink
+  to="/my-orders"
+  className={({ isActive }) =>
+    isActive
+      ? "header__nav-link header__nav-link--active"
+      : "header__nav-link"
+  }
+>
+  Мої замовлення
+</NavLink>
 
-    {user.role === "admin" && (
-      <NavLink
-        to="/admin"
-        className="header__admin-link"
-      >
-        Адмін-панель
-      </NavLink>
-    )}
+    
+  {user.role === "admin" && (
+    <NavLink
+      to="/admin"
+      className="header__admin-link"
+    >
+      Адмін-панель
+
+      {newOrdersCount > 0 && (
+        <span className="header__notification">
+          {newOrdersCount}
+        </span>
+      )}
+    </NavLink>
+  )}
+
 
     <button
       className="header__logout"

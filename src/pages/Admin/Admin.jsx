@@ -19,7 +19,10 @@ function Admin() {
   const [showProducts, setShowProducts] = useState(false);
 const [showProductForm, setShowProductForm] = useState(false);
 const [editingProductId, setEditingProductId] = useState(null);
-
+const [showOrders, setShowOrders] = useState(false);
+const [orders, setOrders] = useState([]);
+const [ordersLoading, setOrdersLoading] = useState(false);
+const [ordersError, setOrdersError] = useState("");
   const [productForm, setProductForm] = useState({
   name: "",
   category: "Жіноча",
@@ -111,6 +114,49 @@ loadProducts();
     checkAdminAccess();
   }, [user, loading, navigate, logout]);
 
+  
+useEffect(() => {
+  if (loading || !user || user.role !== "admin") {
+    return;
+  }
+
+  const loadOrders = async () => {
+    setOrdersLoading(true);
+    setOrdersError("");
+
+    try {
+      const token = localStorage.getItem("vyshyvanka-token");
+
+      if (!token) {
+        throw new Error("Не знайдено токен авторизації");
+      }
+
+      const response = await fetch("http://localhost:5000/api/orders", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Не вдалося завантажити замовлення"
+        );
+      }
+
+      setOrders(data);
+    } catch (error) {
+      setOrdersError(error.message || "Помилка завантаження замовлень");
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  loadOrders();
+}, [loading, user]);
+
+
   if (loading) {
     return (
       <div className="admin-loading">
@@ -122,6 +168,54 @@ loadProducts();
   if (!user || user.role !== "admin") {
     return null;
   }
+
+  
+const handleShowOrders = () => {
+  setShowOrders((prev) => !prev);
+};
+  
+  
+const handleStatusChange = async (orderId, newStatus) => {
+  setOrdersError("");
+
+  try {
+    const token = localStorage.getItem("vyshyvanka-token");
+
+    const response = await fetch(
+      `http://localhost:5000/api/orders/${orderId}/status`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Не вдалося змінити статус замовлення"
+      );
+    }
+
+    setOrders((currentOrders) =>
+      currentOrders.map((order) =>
+        order._id === orderId
+          ? { ...order, status: data.status }
+          : order
+      )
+    );
+
+    setMessage("Статус замовлення успішно змінено");
+  } catch (error) {
+    setOrdersError(error.message || "Помилка зміни статусу");
+  }
+};
+
+
 
   const handleDeleteProduct = async (productId) => {
   const confirmed = window.confirm(
@@ -368,6 +462,34 @@ loadProducts();
             </div>
           )}
 
+          
+<div className="admin-stats">
+  <div className="admin-stats__card">
+    <span className="admin-stats__label">Усього товарів</span>
+    <strong>{products.length}</strong>
+  </div>
+
+  <div className="admin-stats__card">
+    <span className="admin-stats__label">Усього замовлень</span>
+    <strong>{orders.length}</strong>
+  </div>
+
+  <div className="admin-stats__card">
+    <span className="admin-stats__label">Нові замовлення</span>
+    <strong>
+      {orders.filter((order) => order.status === "Нове").length}
+    </strong>
+  </div>
+
+  <div className="admin-stats__card">
+    <span className="admin-stats__label">Виконані замовлення</span>
+    <strong>
+      {orders.filter((order) => order.status === "Виконане").length}
+    </strong>
+  </div>
+</div>
+
+
           <div className="admin-dashboard">
 
             <div className="admin-dashboard__card">
@@ -397,14 +519,17 @@ loadProducts();
 
               <h2>Замовлення</h2>
 
-              <p>
-                Перегляд та обробка замовлень
-                клієнтів.
-              </p>
+<p>
+  Перегляд та обробка замовлень
+  клієнтів.
+</p>
 
-              <button>
-                Переглянути замовлення
-              </button>
+<button
+  type="button"
+ onClick={handleShowOrders}
+>
+  {showOrders ? "Сховати замовлення" : "Переглянути замовлення"}
+</button>
             </div>
 
             <div className="admin-dashboard__card">
@@ -424,6 +549,78 @@ loadProducts();
             </div>
 
           </div>
+
+          
+{showOrders && (
+  <section className="admin-orders">
+    <h2>Замовлення клієнтів</h2>
+
+    {ordersLoading && <p>Завантаження замовлень...</p>}
+
+    {ordersError && (
+      <p className="admin-page__error">{ordersError}</p>
+    )}
+
+    {!ordersLoading && !ordersError && orders.length === 0 && (
+      <p>Замовлень поки немає.</p>
+    )}
+
+    {!ordersLoading &&
+      !ordersError &&
+      orders.map((order) => (
+        <article className="admin-order" key={order._id}>
+          <h3>Замовлення №{order._id.slice(-6)}</h3>
+
+          <p><strong>Покупець:</strong> {order.customerName}</p>
+          <p><strong>Email:</strong> {order.customerEmail}</p>
+          <p><strong>Телефон:</strong> {order.phone}</p>
+          <p><strong>Адреса:</strong> {order.deliveryAddress}</p>
+          <p>
+            <strong>Дата:</strong>{" "}
+            {new Date(order.createdAt).toLocaleString("uk-UA")}
+          </p>
+
+          <h4>Товари</h4>
+
+          {order.items.map((item, index) => (
+            <div key={`${order._id}-${index}`}>
+              <p>
+                {item.name} — {item.quantity} шт. × {item.price} грн
+              </p>
+              {item.size && <p>Розмір: {item.size}</p>}
+              {item.color && <p>Колір: {item.color}</p>}
+            </div>
+          ))}
+
+          <p>
+            <strong>Сума: {order.totalAmount} грн</strong>
+          </p>
+          
+<div className="admin-order__status">
+  <label htmlFor={`status-${order._id}`}>
+    <strong>Статус замовлення:</strong>
+  </label>
+
+  <select
+    id={`status-${order._id}`}
+    value={order.status}
+    onChange={(event) =>
+      handleStatusChange(order._id, event.target.value)
+    }
+  >
+    <option value="Нове">Нове</option>
+    <option value="Підтверджене">Підтверджене</option>
+    <option value="Відправлене">Відправлене</option>
+    <option value="Виконане">Виконане</option>
+    <option value="Скасоване">Скасоване</option>
+  </select>
+</div>
+
+        </article>
+      ))}
+  </section>
+)}
+
           {showProducts && (
 <div className="admin-products">
   <div className="admin-products__header">

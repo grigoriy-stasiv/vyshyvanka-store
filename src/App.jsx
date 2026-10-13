@@ -17,6 +17,7 @@ import Cart from "./pages/Cart/Cart";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import Admin from "./pages/Admin/Admin";
+import MyOrders from "./pages/MyOrders/MyOrders";
 
 const HomePage = () => {
   return (
@@ -54,6 +55,8 @@ const App = () => {
       <Route path="/register" element={<Register />} />
 
       <Route path="/admin" element={<Admin />} />
+
+      <Route path="/my-orders" element={<MyOrders />} />
     </Routes>
   );
 };

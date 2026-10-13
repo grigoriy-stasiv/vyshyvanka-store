@@ -1,10 +1,22 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import "./Cart.css";
 
 function Cart() {
+  const navigate = useNavigate();
+  
+const { user } = useAuth();
+
+const [showCheckout, setShowCheckout] = useState(false);
+const [phone, setPhone] = useState("");
+const [deliveryAddress, setDeliveryAddress] = useState("");
+const [checkoutLoading, setCheckoutLoading] = useState(false);
+const [checkoutError, setCheckoutError] = useState("");
+const [checkoutSuccess, setCheckoutSuccess] = useState("");
   const {
     cartItems,
     cartTotal,
@@ -13,6 +25,67 @@ function Cart() {
     removeFromCart,
     clearCart,
   } = useCart();
+
+  
+const handleCheckout = async (event) => {
+  event.preventDefault();
+  setCheckoutError("");
+  setCheckoutSuccess("");
+
+  if (!user) {
+    navigate("/login");
+    return;
+  }
+
+  const token = localStorage.getItem("vyshyvanka-token");
+
+  if (!token) {
+    navigate("/login");
+    return;
+  }
+
+  setCheckoutLoading(true);
+
+  try {
+    const response = await fetch("http://localhost:5000/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        items: cartItems.map((item) => ({
+          productId: item._id,
+          quantity: item.quantity,
+          size: item.size || "",
+          color: item.color || "",
+        })),
+        phone,
+        deliveryAddress,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Не вдалося оформити замовлення"
+      );
+    }
+
+    setCheckoutSuccess("Замовлення успішно оформлено!");
+    clearCart();
+    navigate("/my-orders");
+    setPhone("");
+    setDeliveryAddress("");
+    setShowCheckout(false);
+  } catch (error) {
+    setCheckoutError(error.message);
+  } finally {
+    setCheckoutLoading(false);
+  }
+};
+
 
   if (cartItems.length === 0) {
   return (
@@ -88,11 +161,29 @@ function Cart() {
                     {item.category}
                   </span>
 
-                  <h2>{item.name}</h2>
+                  
+<h2>{item.name}</h2>
 
-                  <p className="cart-item__price">
-                    {item.price.toLocaleString("uk-UA")} грн
-                  </p>
+{(item.selectedSize || item.selectedColor) && (
+  <div className="cart-item__options">
+    {item.selectedSize && (
+      <p>
+        Розмір: <strong>{item.selectedSize}</strong>
+      </p>
+    )}
+
+    {item.selectedColor && (
+      <p>
+        Колір: <strong>{item.selectedColor}</strong>
+      </p>
+    )}
+  </div>
+)}
+
+<p className="cart-item__price">
+  {item.price.toLocaleString("uk-UA")} грн
+</p>
+
                 </div>
 
                 <div className="cart-item__quantity">
@@ -163,9 +254,54 @@ function Cart() {
               </strong>
             </div>
 
-            <button className="cart-summary__checkout">
-              Оформити замовлення
-            </button>
+            <button
+  type="button"
+  className="cart-summary__checkout"
+  onClick={() => {
+    setCheckoutError("");
+    setShowCheckout((current) => !current);
+  }}
+>
+  {showCheckout ? "Закрити форму" : "Оформити замовлення"}
+              </button>
+              
+              
+{checkoutSuccess && (
+  <p className="checkout-success">{checkoutSuccess}</p>
+)}
+
+{checkoutError && (
+  <p className="checkout-error">{checkoutError}</p>
+)}
+
+{showCheckout && (
+  <form className="checkout-form" onSubmit={handleCheckout}>
+    <label htmlFor="checkout-phone">Номер телефону</label>
+    <input
+      id="checkout-phone"
+      type="tel"
+      value={phone}
+      onChange={(event) => setPhone(event.target.value)}
+      placeholder="+380..."
+      required
+    />
+
+    <label htmlFor="checkout-address">Адреса доставки</label>
+    <textarea
+      id="checkout-address"
+      value={deliveryAddress}
+      onChange={(event) => setDeliveryAddress(event.target.value)}
+      placeholder="Місто, відділення або адреса"
+      rows={3}
+      required
+    />
+
+    <button type="submit" disabled={checkoutLoading}>
+      {checkoutLoading ? "Оформлення..." : "Підтвердити замовлення"}
+    </button>
+  </form>
+)}
+
 
             <Link
               to="/catalog"
