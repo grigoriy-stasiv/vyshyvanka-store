@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const orderItemSchema = new mongoose.Schema(
@@ -35,7 +34,7 @@ const orderItemSchema = new mongoose.Schema(
       default: "",
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const orderSchema = new mongoose.Schema(
@@ -76,17 +75,19 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: [
-        "Нове",
-        "Підтверджене",
-        "Відправлене",
-        "Виконане",
-        "Скасоване",
-      ],
+      enum: ["Нове", "Підтверджене", "Відправлене", "Виконане", "Скасоване"],
       default: "Нове",
     },
+    isRead: {
+      type: Boolean,
+      default: false,
+    },
+    cancellationUnread: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Order", orderSchema);

@@ -1,4 +1,3 @@
-
 const express = require("express");
 const Order = require("../models/Order");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -6,7 +5,6 @@ const adminMiddleware = require("../middleware/adminMiddleware");
 const Product = require("../models/Product");
 
 const router = express.Router();
-
 
 router.get("/my", authMiddleware, async (req, res) => {
   try {
@@ -23,7 +21,6 @@ router.get("/my", authMiddleware, async (req, res) => {
     });
   }
 });
-
 
 router.patch("/my/:id/cancel", authMiddleware, async (req, res) => {
   try {
@@ -45,6 +42,7 @@ router.patch("/my/:id/cancel", authMiddleware, async (req, res) => {
     }
 
     order.status = "Скасоване";
+    order.cancellationUnread = true;
     await order.save();
 
     res.json({
@@ -75,8 +73,7 @@ router.delete("/my/:id", authMiddleware, async (req, res) => {
 
     if (!["Виконане", "Скасоване"].includes(order.status)) {
       return res.status(400).json({
-        message:
-          "Видалити можна лише виконані або скасовані замовлення.",
+        message: "Видалити можна лише виконані або скасовані замовлення.",
       });
     }
 
@@ -94,25 +91,72 @@ router.delete("/my/:id", authMiddleware, async (req, res) => {
   }
 });
 
+router.patch("/:id/read", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { isRead: true },
+      { new: true },
+    );
 
-router.get(
-  "/",
+    if (!order) {
+      return res.status(404).json({
+        message: "Замовлення не знайдено",
+      });
+    }
+
+    res.json(order);
+  } catch (error) {
+    console.error("Помилка позначення замовлення як прочитаного:", error);
+
+    res.status(500).json({
+      message: "Не вдалося позначити замовлення як прочитане",
+    });
+  }
+});
+
+router.patch(
+  "/:id/cancellation-read",
   authMiddleware,
   adminMiddleware,
   async (req, res) => {
     try {
-      const orders = await Order.find()
-        .populate("customer", "name email")
-        .sort({ createdAt: -1 });
+      const order = await Order.findByIdAndUpdate(
+        req.params.id,
+        { cancellationUnread: false },
+        { new: true },
+      );
 
-      res.json(orders);
+      if (!order) {
+        return res.status(404).json({
+          message: "Замовлення не знайдено",
+        });
+      }
+
+      res.json(order);
     } catch (error) {
+      console.error("Помилка позначення скасування як прочитаного:", error);
+
       res.status(500).json({
-        message: "Не вдалося завантажити замовлення",
+        message: "Не вдалося позначити скасування як прочитане",
       });
     }
-  }
+  },
 );
+
+router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("customer", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({
+      message: "Не вдалося завантажити замовлення",
+    });
+  }
+});
 
 router.patch(
   "/:id/status",
@@ -139,7 +183,7 @@ router.patch(
       const order = await Order.findByIdAndUpdate(
         req.params.id,
         { status },
-        { new: true, runValidators: true }
+        { new: true, runValidators: true },
       );
 
       if (!order) {
@@ -154,17 +198,12 @@ router.patch(
         message: "Не вдалося оновити статус замовлення",
       });
     }
-  }
+  },
 );
-
 
 router.post("/", authMiddleware, async (req, res) => {
   try {
-    const {
-      items,
-      phone,
-      deliveryAddress,
-    } = req.body;
+    const { items, phone, deliveryAddress } = req.body;
 
     if (
       !Array.isArray(items) ||
@@ -202,11 +241,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
       const quantity = Number(item.quantity);
 
-      if (
-        !Number.isInteger(quantity) ||
-        quantity < 1 ||
-        quantity > 100
-      ) {
+      if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100) {
         return res.status(400).json({
           message: "Некоректна кількість товару",
         });
@@ -249,6 +284,5 @@ router.post("/", authMiddleware, async (req, res) => {
     });
   }
 });
-
 
 module.exports = router;
