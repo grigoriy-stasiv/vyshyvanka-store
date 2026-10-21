@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import Header from "../../components/Header/Header";
@@ -10,12 +10,18 @@ import "./Login.css";
 
 function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { user, login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      navigate("/", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -44,12 +50,8 @@ function Login() {
 
       <main className="login-page">
         <div className="login-page__container">
-
           <div className="login-card">
-
-            <span className="login-card__label">
-              ОСОБИСТИЙ КАБІНЕТ
-            </span>
+            <span className="login-card__label">ОСОБИСТИЙ КАБІНЕТ</span>
 
             <h1>Вхід</h1>
 
@@ -57,50 +59,34 @@ function Login() {
               Увійдіть до свого облікового запису.
             </p>
 
-            <form
-              className="login-form"
-              onSubmit={handleSubmit}
-            >
-
+            <form className="login-form" onSubmit={handleSubmit}>
               <div className="login-form__group">
-                <label htmlFor="email">
-                  Email
-                </label>
+                <label htmlFor="email">Email</label>
 
                 <input
                   id="email"
                   type="email"
                   placeholder="your@email.com"
                   value={email}
-                  onChange={(event) =>
-                    setEmail(event.target.value)
-                  }
+                  onChange={(event) => setEmail(event.target.value)}
                   required
                 />
               </div>
 
               <div className="login-form__group">
-                <label htmlFor="password">
-                  Пароль
-                </label>
+                <label htmlFor="password">Пароль</label>
 
                 <input
                   id="password"
                   type="password"
                   placeholder="Введіть пароль"
                   value={password}
-                  onChange={(event) =>
-                    setPassword(event.target.value)
-                  }
+                  onChange={(event) => setPassword(event.target.value)}
                   required
                 />
               </div>
 
-              {error && (
-                <div className="login-form__error">
-                  {error}
-                </div>
-              )}
+              {error && <div className="login-form__error">{error}</div>}
 
               <button
                 type="submit"
@@ -109,18 +95,12 @@ function Login() {
               >
                 {loading ? "Вхід..." : "Увійти"}
               </button>
-
             </form>
 
             <p className="login-card__register">
-              Ще не маєте акаунта?{" "}
-              <Link to="/register">
-                Зареєструватися
-              </Link>
+              Ще не маєте акаунта? <Link to="/register">Зареєструватися</Link>
             </p>
-
           </div>
-
         </div>
       </main>
 

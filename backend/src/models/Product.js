@@ -1,5 +1,35 @@
 const mongoose = require("mongoose");
 
+const stockItemSchema = new mongoose.Schema(
+  {
+    size: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    color: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    quantity: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+      validate: {
+        validator: Number.isInteger,
+        message: "Кількість товару має бути цілим числом",
+      },
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -40,6 +70,11 @@ const productSchema = new mongoose.Schema(
       default: [],
     },
 
+    stock: {
+      type: [stockItemSchema],
+      default: [],
+    },
+
     inStock: {
       type: Boolean,
       default: true,
@@ -60,7 +95,7 @@ const productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Product = mongoose.model("Product", productSchema);

@@ -36,33 +36,39 @@ const Catalog = () => {
     fetchProducts();
   }, []);
 
+  const getProductStock = (product) => {
+    if (Array.isArray(product.stock)) {
+      return product.stock.reduce(
+        (total, item) => total + (Number(item.quantity) || 0),
+        0,
+      );
+    }
+
+    return product.inStock ? 1 : 0;
+  };
+
   const filteredProducts = products.filter((product) => {
-  const matchesCategory =
-    selectedCategory === "Усі" ||
-    product.category === selectedCategory;
+    const matchesCategory =
+      selectedCategory === "Усі" || product.category === selectedCategory;
 
-  const matchesSearch =
-    product.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase()) ||
-    product.description
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-  return matchesCategory && matchesSearch;
-});
+    return matchesCategory && matchesSearch;
+  });
 
-const sortedProducts = [...filteredProducts].sort((a, b) => {
-  if (sortOrder === "price-asc") {
-    return a.price - b.price;
-  }
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortOrder === "price-asc") {
+      return a.price - b.price;
+    }
 
-  if (sortOrder === "price-desc") {
-    return b.price - a.price;
-  }
+    if (sortOrder === "price-desc") {
+      return b.price - a.price;
+    }
 
-  return 0;
-});
+    return 0;
+  });
 
   return (
     <>
@@ -75,99 +81,93 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
 
             <h1>Каталог</h1>
 
-            <p>
-              Оберіть свою вишиванку серед наших колекцій
-            </p>
+            <p>Оберіть свою вишиванку серед наших колекцій</p>
           </div>
         </section>
 
         <section className="catalog-page__products">
           <div className="catalog-page__container">
             <div className="catalog-search">
-  <input
-    type="text"
-    placeholder="Пошук вишиванки..."
-    value={searchQuery}
-    onChange={(event) => setSearchQuery(event.target.value)}
-  />
+              <input
+                type="text"
+                placeholder="Пошук вишиванки..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+              />
 
-  {searchQuery && (
-    <button
-      type="button"
-      className="catalog-search__clear"
-      onClick={() => setSearchQuery("")}
-      aria-label="Очистити пошук"
-    >
-      ×
-    </button>
-  )}
-  </div>
-            
-  <div className="catalog-filters">
-  <button
-    className={
-      selectedCategory === "Усі"
-        ? "catalog-filter catalog-filter--active"
-        : "catalog-filter"
-    }
-    onClick={() => setSelectedCategory("Усі")}
-  >
-    Усі
-  </button>
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="catalog-search__clear"
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Очистити пошук"
+                >
+                  ×
+                </button>
+              )}
+            </div>
 
-  <button
-    className={
-      selectedCategory === "Жіноча"
-        ? "catalog-filter catalog-filter--active"
-        : "catalog-filter"
-    }
-    onClick={() => setSelectedCategory("Жіноча")}
-  >
-    Жіночі
-  </button>
+            <div className="catalog-filters">
+              <button
+                className={
+                  selectedCategory === "Усі"
+                    ? "catalog-filter catalog-filter--active"
+                    : "catalog-filter"
+                }
+                onClick={() => setSelectedCategory("Усі")}
+              >
+                Усі
+              </button>
 
-  <button
-    className={
-      selectedCategory === "Чоловіча"
-        ? "catalog-filter catalog-filter--active"
-        : "catalog-filter"
-    }
-    onClick={() => setSelectedCategory("Чоловіча")}
-  >
-    Чоловічі
-  </button>
+              <button
+                className={
+                  selectedCategory === "Жіноча"
+                    ? "catalog-filter catalog-filter--active"
+                    : "catalog-filter"
+                }
+                onClick={() => setSelectedCategory("Жіноча")}
+              >
+                Жіночі
+              </button>
 
-  <button
-    className={
-      selectedCategory === "Дитяча"
-        ? "catalog-filter catalog-filter--active"
-        : "catalog-filter"
-    }
-    onClick={() => setSelectedCategory("Дитяча")}
-  >
-    Дитячі
-    </button>
-  </div>
-            
-  <div className="catalog-sort">
-  <label htmlFor="sort-price">
-    Сортування:
-  </label>
+              <button
+                className={
+                  selectedCategory === "Чоловіча"
+                    ? "catalog-filter catalog-filter--active"
+                    : "catalog-filter"
+                }
+                onClick={() => setSelectedCategory("Чоловіча")}
+              >
+                Чоловічі
+              </button>
 
-  <select
-    id="sort-price"
-    value={sortOrder}
-    onChange={(event) => setSortOrder(event.target.value)}
-  >
-    <option value="default">За замовчуванням</option>
-    <option value="price-asc">Від дешевих до дорогих</option>
-    <option value="price-desc">Від дорогих до дешевих</option>
-  </select>
-</div>
+              <button
+                className={
+                  selectedCategory === "Дитяча"
+                    ? "catalog-filter catalog-filter--active"
+                    : "catalog-filter"
+                }
+                onClick={() => setSelectedCategory("Дитяча")}
+              >
+                Дитячі
+              </button>
+            </div>
+
+            <div className="catalog-sort">
+              <label htmlFor="sort-price">Сортування:</label>
+
+              <select
+                id="sort-price"
+                value={sortOrder}
+                onChange={(event) => setSortOrder(event.target.value)}
+              >
+                <option value="default">За замовчуванням</option>
+                <option value="price-asc">Від дешевих до дорогих</option>
+                <option value="price-desc">Від дорогих до дешевих</option>
+              </select>
+            </div>
             {loading && (
-              <p className="catalog-page__message">
-                Завантаження товарів...
-              </p>
+              <p className="catalog-page__message">Завантаження товарів...</p>
             )}
 
             {error && (
@@ -177,24 +177,22 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
             )}
 
             {!loading && !error && products.length === 0 && (
-              <p className="catalog-page__message">
-                Товарів поки немає.
-              </p>
+              <p className="catalog-page__message">Товарів поки немає.</p>
             )}
 
-            {!loading && !error && products.length > 0 && filteredProducts.length === 0 && (
-  <p className="catalog-page__message">
-    За вашим запитом товарів не знайдено.
-  </p>
-)}
+            {!loading &&
+              !error &&
+              products.length > 0 &&
+              filteredProducts.length === 0 && (
+                <p className="catalog-page__message">
+                  За вашим запитом товарів не знайдено.
+                </p>
+              )}
 
             {!loading && !error && products.length > 0 && (
               <div className="catalog-page__grid">
                 {sortedProducts.map((product) => (
-                  <article
-                    className="catalog-product"
-                    key={product._id}
-                  >
+                  <article className="catalog-product" key={product._id}>
                     <Link
                       to={`/products/${product._id}`}
                       className="catalog-product__image-link"
@@ -212,6 +210,16 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
                       <span className="catalog-product__category">
                         {product.category}
                       </span>
+
+                      {getProductStock(product) > 0 ? (
+                        <p className="catalog-product__availability">
+                          Є в наявності: {getProductStock(product)} шт.
+                        </p>
+                      ) : (
+                        <p className="catalog-product__availability catalog-product__availability--out">
+                          Немає в наявності
+                        </p>
+                      )}
 
                       <h2>{product.name}</h2>
 

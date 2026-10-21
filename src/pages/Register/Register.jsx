@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import Header from "../../components/Header/Header";
@@ -10,15 +10,19 @@ import "./Register.css";
 
 function Register() {
   const navigate = useNavigate();
-  const { register } = useAuth();
-
+  const { user, register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      navigate("/", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -54,12 +58,8 @@ function Register() {
 
       <main className="register-page">
         <div className="register-page__container">
-
           <div className="register-card">
-
-            <span className="register-card__label">
-              ОСОБИСТИЙ КАБІНЕТ
-            </span>
+            <span className="register-card__label">ОСОБИСТИЙ КАБІНЕТ</span>
 
             <h1>Реєстрація</h1>
 
@@ -67,106 +67,74 @@ function Register() {
               Створіть обліковий запис для зручних покупок.
             </p>
 
-            <form
-              className="register-form"
-              onSubmit={handleSubmit}
-            >
-
+            <form className="register-form" onSubmit={handleSubmit}>
               <div className="register-form__group">
-                <label htmlFor="name">
-                  Ім'я
-                </label>
+                <label htmlFor="name">Ім'я</label>
 
                 <input
                   id="name"
                   type="text"
                   placeholder="Ваше ім'я"
                   value={name}
-                  onChange={(event) =>
-                    setName(event.target.value)
-                  }
+                  onChange={(event) => setName(event.target.value)}
                   required
                 />
               </div>
 
               <div className="register-form__group">
-                <label htmlFor="email">
-                  Email
-                </label>
+                <label htmlFor="email">Email</label>
 
                 <input
                   id="email"
                   type="email"
                   placeholder="your@email.com"
                   value={email}
-                  onChange={(event) =>
-                    setEmail(event.target.value)
-                  }
+                  onChange={(event) => setEmail(event.target.value)}
                   required
                 />
               </div>
 
               <div className="register-form__group">
-                <label htmlFor="password">
-                  Пароль
-                </label>
+                <label htmlFor="password">Пароль</label>
 
                 <input
                   id="password"
                   type="password"
                   placeholder="Мінімум 6 символів"
                   value={password}
-                  onChange={(event) =>
-                    setPassword(event.target.value)
-                  }
+                  onChange={(event) => setPassword(event.target.value)}
                   required
                 />
               </div>
 
               <div className="register-form__group">
-                <label htmlFor="confirmPassword">
-                  Підтвердження пароля
-                </label>
+                <label htmlFor="confirmPassword">Підтвердження пароля</label>
 
                 <input
                   id="confirmPassword"
                   type="password"
                   placeholder="Повторіть пароль"
                   value={confirmPassword}
-                  onChange={(event) =>
-                    setConfirmPassword(event.target.value)
-                  }
+                  onChange={(event) => setConfirmPassword(event.target.value)}
                   required
                 />
               </div>
 
-              {error && (
-                <div className="register-form__error">
-                  {error}
-                </div>
-              )}
+              {error && <div className="register-form__error">{error}</div>}
 
               <button
                 type="submit"
                 className="register-form__button"
                 disabled={loading}
               >
-                {loading
-                  ? "Створення акаунта..."
-                  : "Зареєструватися"}
+                {loading ? "Створення акаунта..." : "Зареєструватися"}
               </button>
-
             </form>
 
             <p className="register-card__login">
-              Вже маєте акаунт?{" "}
-              <Link to="/login">
-                Увійти
-              </Link>
+              Вже маєте акаунт? <Link to="/login">Увійти</Link>
             </p>
-
           </div>
-
         </div>
       </main>
 

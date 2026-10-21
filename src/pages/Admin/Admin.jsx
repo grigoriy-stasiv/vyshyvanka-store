@@ -34,6 +34,7 @@ function Admin() {
     image: "",
     sizes: "",
     colors: "",
+    stock: [],
     inStock: true,
     rating: 0,
     reviewsCount: 0,
@@ -317,6 +318,30 @@ function Admin() {
     }));
   };
 
+  const handleStockQuantityChange = (size, color, value) => {
+    const quantity = value === "" ? "" : Number(value);
+
+    setProductForm((current) => {
+      const currentStock = Array.isArray(current.stock) ? current.stock : [];
+
+      const existingStock = currentStock.filter(
+        (item) => !(item.size === size && item.color === color),
+      );
+
+      return {
+        ...current,
+        stock: [
+          ...existingStock,
+          {
+            size,
+            color,
+            quantity,
+          },
+        ],
+      };
+    });
+  };
+
   const handleAddProduct = async (event) => {
     event.preventDefault();
 
@@ -354,18 +379,37 @@ function Admin() {
       imageUrl = uploadData.url;
     }
 
+    const sizes = productForm.sizes
+      .split(",")
+      .map((size) => size.trim())
+      .filter(Boolean);
+
+    const colors = productForm.colors
+      .split(",")
+      .map((color) => color.trim())
+      .filter(Boolean);
+
+    const stock = sizes.flatMap((size) =>
+      colors.map((color) => {
+        const item = (productForm.stock || []).find(
+          (entry) => entry.size === size && entry.color === color,
+        );
+
+        return {
+          size,
+          color,
+          quantity: item && item.quantity !== "" ? Number(item.quantity) : 0,
+        };
+      }),
+    );
+
     const productData = {
       ...productForm,
       image: imageUrl,
       price: Number(productForm.price),
-      sizes: productForm.sizes
-        .split(",")
-        .map((size) => size.trim())
-        .filter(Boolean),
-      colors: productForm.colors
-        .split(",")
-        .map((color) => color.trim())
-        .filter(Boolean),
+      sizes,
+      colors,
+      stock,
       rating: Number(productForm.rating),
       reviewsCount: Number(productForm.reviewsCount),
     };
@@ -459,6 +503,24 @@ function Admin() {
 
     return matchesSearch && matchesCategory;
   });
+
+  const parsedSizes = productForm.sizes
+    .split(",")
+    .map((size) => size.trim())
+    .filter(Boolean);
+
+  const parsedColors = productForm.colors
+    .split(",")
+    .map((color) => color.trim())
+    .filter(Boolean);
+
+  const getStockQuantity = (size, color) => {
+    const item = (productForm.stock || []).find(
+      (entry) => entry.size === size && entry.color === color,
+    );
+
+    return item ? item.quantity : 0;
+  };
 
   return (
     <>
@@ -860,6 +922,54 @@ function Admin() {
                         placeholder="Білий, чорний"
                       />
                     </div>
+                  </div>
+
+                  <div className="admin-product-form__group admin-product-form__group--full">
+                    <label>Залишки на складі</label>
+
+                    {parsedSizes.length === 0 || parsedColors.length === 0 ? (
+                      <p>
+                        Спочатку вкажіть розміри та кольори товару через кому.
+                      </p>
+                    ) : (
+                      <div className="admin-stock-table">
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Розмір</th>
+                              <th>Колір</th>
+                              <th>Кількість</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {parsedSizes.flatMap((size) =>
+                              parsedColors.map((color) => (
+                                <tr key={`${size}-${color}`}>
+                                  <td>{size}</td>
+                                  <td>{color}</td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      step="1"
+                                      value={getStockQuantity(size, color)}
+                                      onChange={(event) =>
+                                        handleStockQuantityChange(
+                                          size,
+                                          color,
+                                          event.target.value,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                </tr>
+                              )),
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
 
                   <label className="admin-product-form__stock">

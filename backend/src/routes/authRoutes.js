@@ -6,28 +6,23 @@ const User = require("../models/User");
 
 const router = express.Router();
 
-// ==============================
 // РЕЄСТРАЦІЯ
-// ==============================
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Перевірка даних
     if (!name || !email || !password) {
       return res.status(400).json({
         message: "Заповніть усі поля",
       });
     }
 
-    // Перевірка довжини пароля
     if (password.length < 6) {
       return res.status(400).json({
         message: "Пароль повинен містити щонайменше 6 символів",
       });
     }
 
-    // Перевіряємо, чи вже існує користувач
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -36,10 +31,8 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // Хешуємо пароль
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Створюємо користувача
     const user = await User.create({
       name,
       email,
@@ -65,21 +58,17 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// ==============================
 // ВХІД
-// ==============================
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Перевірка даних
     if (!email || !password) {
       return res.status(400).json({
         message: "Введіть email та пароль",
       });
     }
 
-    // Шукаємо користувача
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -88,11 +77,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Перевіряємо пароль
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
@@ -100,7 +85,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Створюємо JWT
     const token = jwt.sign(
       {
         userId: user._id,
@@ -109,7 +93,7 @@ router.post("/login", async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "7d",
-      }
+      },
     );
 
     res.json({
@@ -131,14 +115,10 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ==============================
 // ПОТОЧНИЙ КОРИСТУВАЧ
-// ==============================
 router.get("/me", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select(
-      "-password"
-    );
+    const user = await User.findById(req.user.userId).select("-password");
 
     if (!user) {
       return res.status(404).json({
