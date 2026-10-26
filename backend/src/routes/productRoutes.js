@@ -101,7 +101,7 @@ router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
-// PUT /api/products/:id
+
 router.put("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const stockError = validateProductStock(req.body);

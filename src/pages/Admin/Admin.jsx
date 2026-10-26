@@ -26,6 +26,15 @@ function Admin() {
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState("");
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [userOrders, setUserOrders] = useState({});
+  const [userOrdersLoading, setUserOrdersLoading] = useState({});
+  const [expandedUserId, setExpandedUserId] = useState(null);
+  const [usersError, setUsersError] = useState("");
+  const [showUsers, setShowUsers] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+  const [userRoleFilter, setUserRoleFilter] = useState("Усі");
   const [productForm, setProductForm] = useState({
     name: "",
     category: "Жіноча",
@@ -112,6 +121,7 @@ function Admin() {
     if (loading || !user || user.role !== "admin") {
       return;
     }
+    
 
     const loadOrders = async () => {
       setOrdersLoading(true);
@@ -146,6 +156,46 @@ function Admin() {
 
     loadOrders();
   }, [loading, user]);
+
+    useEffect(() => {
+      if (loading || !user || user.role !== 'admin') {
+        return;
+      }
+
+      const loadUsers = async () => {
+        setUsersLoading(true);
+        setUsersError('');
+
+        try {
+          const token = localStorage.getItem('vyshyvanka-token');
+
+          const response = await fetch(
+            'http://localhost:5000/api/admin/users',
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(
+              data.message || 'Не вдалося завантажити користувачів',
+            );
+          }
+
+          setUsers(data);
+        } catch (error) {
+          setUsersError(error.message || 'Помилка завантаження користувачів');
+        } finally {
+          setUsersLoading(false);
+        }
+      };
+
+      loadUsers();
+    }, [loading, user]);
 
   if (loading) {
     return <div className="admin-loading">Завантаження...</div>;
@@ -484,6 +534,7 @@ function Admin() {
       image: product.image || "",
       sizes: Array.isArray(product.sizes) ? product.sizes.join(", ") : "",
       colors: Array.isArray(product.colors) ? product.colors.join(", ") : "",
+      stock: Array.isArray(product.stock) ? product.stock : [],
       inStock: product.inStock ?? true,
       rating: product.rating || 0,
       reviewsCount: product.reviewsCount || 0,
@@ -504,6 +555,19 @@ function Admin() {
     return matchesSearch && matchesCategory;
   });
 
+  const filteredUsers = users.filter(userItem => {
+    const search = userSearch.trim().toLowerCase();
+
+    const matchesSearch =
+      (userItem.name || '').toLowerCase().includes(search) ||
+      (userItem.email || '').toLowerCase().includes(search);
+
+    const matchesRole =
+      userRoleFilter === 'Усі' || userItem.role === userRoleFilter;
+
+    return matchesSearch && matchesRole;
+  });
+
   const parsedSizes = productForm.sizes
     .split(",")
     .map((size) => size.trim())
@@ -520,6 +584,56 @@ function Admin() {
     );
 
     return item ? item.quantity : 0;
+  };
+
+  const handleLoadUserOrders = async userId => {
+    if (expandedUserId === userId) {
+      setExpandedUserId(null);
+      return;
+    }
+
+    setExpandedUserId(userId);
+
+    if (userOrders[userId]) {
+      return;
+    }
+
+    try {
+      setUserOrdersLoading(prev => ({
+        ...prev,
+        [userId]: true,
+      }));
+
+      const token = localStorage.getItem('vyshyvanka-token');
+
+      const response = await fetch(
+        `http://localhost:5000/api/admin/users/${userId}/orders`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('Не вдалося завантажити замовлення');
+      }
+
+      const data = await response.json();
+
+      setUserOrders(prev => ({
+        ...prev,
+        [userId]: data,
+      }));
+    } catch (error) {
+      console.error('Помилка завантаження історії:', error);
+      alert('Не вдалося завантажити історію замовлень');
+    } finally {
+      setUserOrdersLoading(prev => ({
+        ...prev,
+        [userId]: false,
+      }));
+    }
   };
 
   return (
@@ -560,14 +674,14 @@ function Admin() {
             <div className="admin-stats__card">
               <span className="admin-stats__label">Нові замовлення</span>
               <strong>
-                {orders.filter((order) => order.status === "Нове").length}
+                {orders.filter(order => order.status === 'Нове').length}
               </strong>
             </div>
 
             <div className="admin-stats__card">
               <span className="admin-stats__label">Виконані замовлення</span>
               <strong>
-                {orders.filter((order) => order.status === "Виконане").length}
+                {orders.filter(order => order.status === 'Виконане').length}
               </strong>
             </div>
           </div>
@@ -582,9 +696,9 @@ function Admin() {
 
               <button
                 type="button"
-                onClick={() => setShowProducts((current) => !current)}
+                onClick={() => setShowProducts(current => !current)}
               >
-                {showProducts ? "Сховати товари" : "Керувати товарами"}
+                {showProducts ? 'Сховати товари' : 'Керувати товарами'}
               </button>
             </div>
 
@@ -596,7 +710,7 @@ function Admin() {
               <p>Перегляд та обробка замовлень клієнтів.</p>
 
               <button type="button" onClick={handleShowOrders}>
-                {showOrders ? "Сховати замовлення" : "Переглянути замовлення"}
+                {showOrders ? 'Сховати замовлення' : 'Переглянути замовлення'}
               </button>
             </div>
 
@@ -607,7 +721,14 @@ function Admin() {
 
               <p>Перегляд зареєстрованих користувачів.</p>
 
-              <button>Переглянути користувачів</button>
+              <button
+                type="button"
+                onClick={() => setShowUsers(current => !current)}
+              >
+                {showUsers
+                  ? 'Сховати користувачів'
+                  : 'Переглянути користувачів'}
+              </button>
             </div>
           </div>
 
@@ -627,7 +748,7 @@ function Admin() {
 
               {!ordersLoading &&
                 !ordersError &&
-                orders.map((order) => (
+                orders.map(order => (
                   <article className="admin-order" key={order._id}>
                     <div className="admin-order__summary">
                       <div className="admin-order__thumbnails">
@@ -658,7 +779,7 @@ function Admin() {
                         <strong>{order.totalAmount} грн</strong>
                         <span className="admin-order__date">
                           {new Date(order.createdAt).toLocaleDateString(
-                            "uk-UA",
+                            'uk-UA',
                           )}
                         </span>
                       </div>
@@ -667,14 +788,14 @@ function Admin() {
                         type="button"
                         className="admin-order__toggle"
                         onClick={() =>
-                          setExpandedOrderId((currentId) =>
+                          setExpandedOrderId(currentId =>
                             currentId === order._id ? null : order._id,
                           )
                         }
                       >
                         {expandedOrderId === order._id
-                          ? "Згорнути ▲"
-                          : "Детальніше ▼"}
+                          ? 'Згорнути ▲'
+                          : 'Детальніше ▼'}
                       </button>
                     </div>
 
@@ -707,8 +828,8 @@ function Admin() {
                           <strong>Адреса:</strong> {order.deliveryAddress}
                         </p>
                         <p>
-                          <strong>Дата:</strong>{" "}
-                          {new Date(order.createdAt).toLocaleString("uk-UA")}
+                          <strong>Дата:</strong>{' '}
+                          {new Date(order.createdAt).toLocaleString('uk-UA')}
                         </p>
 
                         <h4>Товари</h4>
@@ -719,7 +840,7 @@ function Admin() {
                             key={`${order._id}-detail-${index}`}
                           >
                             <p>
-                              {item.name} — {item.quantity} шт. × {item.price}{" "}
+                              {item.name} — {item.quantity} шт. × {item.price}{' '}
                               грн
                             </p>
                             {item.size && <p>Розмір: {item.size}</p>}
@@ -739,7 +860,7 @@ function Admin() {
                           <select
                             id={`status-${order._id}`}
                             value={order.status}
-                            onChange={(event) =>
+                            onChange={event =>
                               handleStatusChange(order._id, event.target.value)
                             }
                           >
@@ -754,6 +875,126 @@ function Admin() {
                     )}
                   </article>
                 ))}
+            </section>
+          )}
+
+          {showUsers && (
+            <section className="admin-users">
+              <div className="admin-users__header">
+                <div>
+                  <span className="admin-users__label">КЛІЄНТСЬКА БАЗА</span>
+                  <h2>Зареєстровані користувачі</h2>
+                </div>
+
+                <strong>Усього: {users.length}</strong>
+              </div>
+
+              {usersLoading && <p>Завантаження користувачів...</p>}
+
+              {usersError && <p className="admin-page__error">{usersError}</p>}
+
+              {!usersLoading && !usersError && (
+                <>
+                  <div className="admin-users__filters">
+                    <input
+                      type="text"
+                      placeholder="Пошук за ім'ям або email..."
+                      value={userSearch}
+                      onChange={event => setUserSearch(event.target.value)}
+                    />
+
+                    <select
+                      value={userRoleFilter}
+                      onChange={event => setUserRoleFilter(event.target.value)}
+                    >
+                      <option value="Усі">Усі ролі</option>
+                      <option value="user">Покупці</option>
+                      <option value="admin">Адміністратори</option>
+                    </select>
+                  </div>
+
+                  {filteredUsers.length === 0 ? (
+                    <p>Користувачів за вашим запитом не знайдено.</p>
+                  ) : (
+                    <div className="admin-users__list">
+                      {filteredUsers.map(userItem => (
+                        <article className="admin-user" key={userItem._id}>
+                          <div>
+                            <h3>{userItem.name}</h3>
+                            <p>{userItem.email}</p>
+                          </div>
+
+                          <span>
+                            {userItem.role === 'admin'
+                              ? 'Адміністратор'
+                              : 'Покупець'}
+                          </span>
+
+                          <small>
+                            Реєстрація:{' '}
+                            {new Date(userItem.createdAt).toLocaleDateString(
+                              'uk-UA',
+                            )}
+                          </small>
+                          <button
+                            type="button"
+                            className="admin-user__orders-button"
+                            onClick={() => handleLoadUserOrders(userItem._id)}
+                          >
+                            {expandedUserId === userItem._id
+                              ? 'Сховати замовлення'
+                              : 'Історія замовлень'}
+                          </button>
+
+                          {expandedUserId === userItem._id && (
+                            <div className="admin-user__orders">
+                              {userOrdersLoading[userItem._id] ? (
+                                <p>Завантаження замовлень...</p>
+                              ) : userOrders[userItem._id]?.length > 0 ? (
+                                userOrders[userItem._id].map(order => (
+                                  <div
+                                    className="admin-user__order"
+                                    key={order._id}
+                                  >
+                                    <p>Замовлення № {order._id}</p>
+                                    <p>
+                                      Дата:{' '}
+                                      {new Date(
+                                        order.createdAt,
+                                      ).toLocaleDateString('uk-UA')}
+                                    </p>
+                                    <p>Сума: {order.totalAmount} грн</p>
+                                    <p>Статус: {order.status}</p>
+                                    <p>Email: {order.customerEmail || '—'}</p>
+                                    <p>Телефон: {order.phone || '—'}</p>
+                                    <p>
+                                      Адреса доставки:{' '}
+                                      {order.deliveryAddress || '—'}
+                                    </p>
+
+                                    <div>
+                                      {order.items.map((item, index) => (
+                                        <p key={`${order._id}-${index}`}>
+                                          {item.name} — {item.quantity} шт.
+                                          {item.size && `, розмір ${item.size}`}
+                                          {item.color &&
+                                            `, колір ${item.color}`}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <p>У цього користувача ще немає замовлень.</p>
+                              )}
+                            </div>
+                          )}
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
             </section>
           )}
 
@@ -773,13 +1014,13 @@ function Admin() {
                     setEditingProductId(null);
 
                     setProductForm({
-                      name: "",
-                      category: "Жіноча",
-                      description: "",
-                      price: "",
-                      image: "",
-                      sizes: "",
-                      colors: "",
+                      name: '',
+                      category: 'Жіноча',
+                      description: '',
+                      price: '',
+                      image: '',
+                      sizes: '',
+                      colors: '',
                       inStock: true,
                       rating: 0,
                       reviewsCount: 0,
@@ -797,13 +1038,13 @@ function Admin() {
                   type="text"
                   placeholder="Пошук товару за назвою..."
                   value={productSearch}
-                  onChange={(e) => setProductSearch(e.target.value)}
+                  onChange={e => setProductSearch(e.target.value)}
                   className="admin-products__search"
                 />
 
                 <select
                   value={productCategoryFilter}
-                  onChange={(e) => setProductCategoryFilter(e.target.value)}
+                  onChange={e => setProductCategoryFilter(e.target.value)}
                   className="admin-products__category-filter"
                 >
                   <option value="Усі">Усі категорії</option>
@@ -872,7 +1113,7 @@ function Admin() {
                         name="image"
                         accept="image/*"
                         className="admin-product-form__file"
-                        onChange={(event) => {
+                        onChange={event => {
                           setProductImageFile(event.target.files[0] || null);
                         }}
                       />
@@ -943,8 +1184,8 @@ function Admin() {
                           </thead>
 
                           <tbody>
-                            {parsedSizes.flatMap((size) =>
-                              parsedColors.map((color) => (
+                            {parsedSizes.flatMap(size =>
+                              parsedColors.map(color => (
                                 <tr key={`${size}-${color}`}>
                                   <td>{size}</td>
                                   <td>{color}</td>
@@ -954,7 +1195,7 @@ function Admin() {
                                       min="0"
                                       step="1"
                                       value={getStockQuantity(size, color)}
-                                      onChange={(event) =>
+                                      onChange={event =>
                                         handleStockQuantityChange(
                                           size,
                                           color,
@@ -999,11 +1240,11 @@ function Admin() {
                     >
                       {productSaving
                         ? editingProductId
-                          ? "Збереження..."
-                          : "Додавання..."
+                          ? 'Збереження...'
+                          : 'Додавання...'
                         : editingProductId
-                          ? "Зберегти зміни"
-                          : "Додати товар"}
+                          ? 'Зберегти зміни'
+                          : 'Додати товар'}
                     </button>
                   </div>
                 </form>
@@ -1022,8 +1263,8 @@ function Admin() {
                   <button
                     type="button"
                     onClick={() => {
-                      setProductSearch("");
-                      setProductCategoryFilter("Усі");
+                      setProductSearch('');
+                      setProductCategoryFilter('Усі');
                     }}
                   >
                     Очистити пошук і фільтри
@@ -1031,7 +1272,7 @@ function Admin() {
                 </div>
               ) : (
                 <div className="admin-products__list">
-                  {filteredProducts.map((product) => (
+                  {filteredProducts.map(product => (
                     <div className="admin-product" key={product._id}>
                       <img
                         src={product.image}
