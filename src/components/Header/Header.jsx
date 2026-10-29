@@ -8,7 +8,6 @@ function Header() {
   const { cartCount } = useCart();
   const { user, logout } = useAuth();
   const location = useLocation();
-
   const [menuOpen, setMenuOpen] = useState(false);
   const [newOrdersCount, setNewOrdersCount] = useState(0);
   const [cancelledOrdersCount, setCancelledOrdersCount] = useState(0);
@@ -87,7 +86,7 @@ function Header() {
 
         <nav
           id="header-navigation"
-          className={`header__nav ${menuOpen ? "header__nav--open" : ""}`}
+          className={`header__nav ${menuOpen ? 'header__nav--open' : ''}`}
         >
           <NavLink to="/" end className={getNavClass} onClick={closeMenu}>
             Головна
@@ -106,6 +105,12 @@ function Header() {
           </NavLink>
 
           {user && (
+            <NavLink to="/profile" className={getNavClass} onClick={closeMenu}>
+              Мій профіль
+            </NavLink>
+          )}
+
+          {user && (
             <NavLink
               to="/my-orders"
               className={getNavClass}
@@ -115,7 +120,7 @@ function Header() {
             </NavLink>
           )}
 
-          {user?.role === "admin" && (
+          {user?.role === 'admin' && (
             <NavLink
               to="/admin"
               className="header__admin-link"
@@ -224,11 +229,11 @@ function Header() {
 
           <button
             type="button"
-            className={`header__burger ${menuOpen ? "header__burger--open" : ""}`}
-            aria-label={menuOpen ? "Закрити меню" : "Відкрити меню"}
+            className={`header__burger ${menuOpen ? 'header__burger--open' : ''}`}
+            aria-label={menuOpen ? 'Закрити меню' : 'Відкрити меню'}
             aria-expanded={menuOpen}
             aria-controls="header-navigation"
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={() => setMenuOpen(open => !open)}
           >
             <span />
             <span />

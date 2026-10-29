@@ -11,32 +11,31 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Перевіряємо авторизацію при запуску сайту
   useEffect(() => {
-    const token = localStorage.getItem("vyshyvanka-token");
+    const token = localStorage.getItem('vyshyvanka-token');
 
     if (!token) {
       setLoading(false);
       return;
     }
 
-    fetch("http://localhost:5000/api/auth/me", {
+    fetch('http://localhost:5000/api/auth/me', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then(async (response) => {
+      .then(async response => {
         if (!response.ok) {
-          throw new Error("Токен недійсний");
+          throw new Error('Токен недійсний');
         }
 
         return response.json();
       })
-      .then((data) => {
+      .then(data => {
         setUser(data.user);
       })
       .catch(() => {
-        localStorage.removeItem("vyshyvanka-token");
+        localStorage.removeItem('vyshyvanka-token');
         setUser(null);
       })
       .finally(() => {
@@ -46,30 +45,24 @@ export const AuthProvider = ({ children }) => {
 
   // Вхід
   const login = async (email, password) => {
-    const response = await fetch(
-      "http://localhost:5000/api/auth/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      }
-    );
+    const response = await fetch('http://localhost:5000/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || "Помилка входу");
+      throw new Error(data.message || 'Помилка входу');
     }
 
-    localStorage.setItem(
-      "vyshyvanka-token",
-      data.token
-    );
+    localStorage.setItem('vyshyvanka-token', data.token);
 
     setUser(data.user);
 
@@ -78,36 +71,34 @@ export const AuthProvider = ({ children }) => {
 
   // Реєстрація
   const register = async (name, email, password) => {
-    const response = await fetch(
-      "http://localhost:5000/api/auth/register",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
-      }
-    );
+    const response = await fetch('http://localhost:5000/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+      }),
+    });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(
-        data.message || "Помилка реєстрації"
-      );
+      throw new Error(data.message || 'Помилка реєстрації');
     }
 
     return data;
   };
 
-  // Вихід
   const logout = () => {
-    localStorage.removeItem("vyshyvanka-token");
+    localStorage.removeItem('vyshyvanka-token');
     setUser(null);
+  };
+
+  const updateUser = updatedUser => {
+    setUser(updatedUser);
   };
 
   return (
@@ -118,12 +109,13 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        updateUser,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
-};
+};;
 
 export const useAuth = () => {
   return useContext(AuthContext);

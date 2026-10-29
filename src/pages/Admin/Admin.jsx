@@ -560,7 +560,8 @@ function Admin() {
 
     const matchesSearch =
       (userItem.name || '').toLowerCase().includes(search) ||
-      (userItem.email || '').toLowerCase().includes(search);
+      (userItem.email || '').toLowerCase().includes(search) ||
+      (userItem.phone || '').toLowerCase().includes(search);
 
     const matchesRole =
       userRoleFilter === 'Усі' || userItem.role === userRoleFilter;
@@ -922,6 +923,7 @@ function Admin() {
                           <div>
                             <h3>{userItem.name}</h3>
                             <p>{userItem.email}</p>
+                            <p>{userItem.phone || 'Телефон не вказано'}</p>
                           </div>
 
                           <span>

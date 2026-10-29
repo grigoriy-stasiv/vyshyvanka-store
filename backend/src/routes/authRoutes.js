@@ -115,7 +115,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ПОТОЧНИЙ КОРИСТУВАЧ
 router.get("/me", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select("-password");
@@ -132,10 +131,82 @@ router.get("/me", authMiddleware, async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        phone: user.phone || '',
+        address: user.address || '',
       },
     });
   } catch (error) {
     console.error("Помилка отримання користувача:", error);
+
+    res.status(500).json({
+      message: "Помилка сервера",
+    });
+  }
+});
+
+router.patch("/me", authMiddleware, async (req, res) => {
+  try {
+    const { name, email, phone, address } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({
+        message: "Ім'я та email обов'язкові",
+      });
+    }
+
+    const normalizedName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedName || !normalizedEmail) {
+      return res.status(400).json({
+        message: "Ім'я та email не можуть бути порожніми",
+      });
+    }
+
+    const existingUser = await User.findOne({
+      email: normalizedEmail,
+      _id: { $ne: req.user.userId },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Цей email вже використовується",
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.userId,
+      {
+        name: normalizedName,
+        email: normalizedEmail,
+        phone: phone?.trim() || '',
+        address: address?.trim() || '',
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Користувача не знайдено",
+      });
+    }
+
+   res.json({
+     message: 'Профіль успішно оновлено',
+     user: {
+       id: user._id,
+       name: user.name,
+       email: user.email,
+       role: user.role,
+       phone: user.phone || '',
+       address: user.address || '',
+     },
+   });
+  } catch (error) {
+    console.error("Помилка оновлення профілю:", error);
 
     res.status(500).json({
       message: "Помилка сервера",
