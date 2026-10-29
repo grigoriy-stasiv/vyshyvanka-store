@@ -1,26 +1,32 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 
-import Header from "../../components/Header/Header";
-import Footer from "../../components/Footer/Footer";
+import Header from '../../components/Header/Header';
+import Footer from '../../components/Footer/Footer';
 
-import "./Catalog.css";
+import './Catalog.css';
 
 const Catalog = () => {
+  const [searchParams] = useSearchParams();
+  const categoryFromUrl = searchParams.get('category');
   const [products, setProducts] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("Усі");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortOrder, setSortOrder] = useState("default");
+  const [selectedCategory, setSelectedCategory] = useState(
+    ['Жіноча', 'Чоловіча', 'Дитяча'].includes(categoryFromUrl)
+      ? categoryFromUrl
+      : 'Усі',
+  );
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState('default');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/products");
+        const response = await fetch('http://localhost:5000/api/products');
 
         if (!response.ok) {
-          throw new Error("Не вдалося отримати товари");
+          throw new Error('Не вдалося отримати товари');
         }
 
         const data = await response.json();
@@ -36,7 +42,7 @@ const Catalog = () => {
     fetchProducts();
   }, []);
 
-  const getProductStock = (product) => {
+  const getProductStock = product => {
     if (Array.isArray(product.stock)) {
       return product.stock.reduce(
         (total, item) => total + (Number(item.quantity) || 0),
@@ -47,9 +53,9 @@ const Catalog = () => {
     return product.inStock ? 1 : 0;
   };
 
-  const filteredProducts = products.filter((product) => {
+  const filteredProducts = products.filter(product => {
     const matchesCategory =
-      selectedCategory === "Усі" || product.category === selectedCategory;
+      selectedCategory === 'Усі' || product.category === selectedCategory;
 
     const matchesSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -59,11 +65,11 @@ const Catalog = () => {
   });
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortOrder === "price-asc") {
+    if (sortOrder === 'price-asc') {
       return a.price - b.price;
     }
 
-    if (sortOrder === "price-desc") {
+    if (sortOrder === 'price-desc') {
       return b.price - a.price;
     }
 
@@ -92,14 +98,14 @@ const Catalog = () => {
                 type="text"
                 placeholder="Пошук вишиванки..."
                 value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
+                onChange={event => setSearchQuery(event.target.value)}
               />
 
               {searchQuery && (
                 <button
                   type="button"
                   className="catalog-search__clear"
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => setSearchQuery('')}
                   aria-label="Очистити пошук"
                 >
                   ×
@@ -110,44 +116,44 @@ const Catalog = () => {
             <div className="catalog-filters">
               <button
                 className={
-                  selectedCategory === "Усі"
-                    ? "catalog-filter catalog-filter--active"
-                    : "catalog-filter"
+                  selectedCategory === 'Усі'
+                    ? 'catalog-filter catalog-filter--active'
+                    : 'catalog-filter'
                 }
-                onClick={() => setSelectedCategory("Усі")}
+                onClick={() => setSelectedCategory('Усі')}
               >
                 Усі
               </button>
 
               <button
                 className={
-                  selectedCategory === "Жіноча"
-                    ? "catalog-filter catalog-filter--active"
-                    : "catalog-filter"
+                  selectedCategory === 'Жіноча'
+                    ? 'catalog-filter catalog-filter--active'
+                    : 'catalog-filter'
                 }
-                onClick={() => setSelectedCategory("Жіноча")}
+                onClick={() => setSelectedCategory('Жіноча')}
               >
                 Жіночі
               </button>
 
               <button
                 className={
-                  selectedCategory === "Чоловіча"
-                    ? "catalog-filter catalog-filter--active"
-                    : "catalog-filter"
+                  selectedCategory === 'Чоловіча'
+                    ? 'catalog-filter catalog-filter--active'
+                    : 'catalog-filter'
                 }
-                onClick={() => setSelectedCategory("Чоловіча")}
+                onClick={() => setSelectedCategory('Чоловіча')}
               >
                 Чоловічі
               </button>
 
               <button
                 className={
-                  selectedCategory === "Дитяча"
-                    ? "catalog-filter catalog-filter--active"
-                    : "catalog-filter"
+                  selectedCategory === 'Дитяча'
+                    ? 'catalog-filter catalog-filter--active'
+                    : 'catalog-filter'
                 }
-                onClick={() => setSelectedCategory("Дитяча")}
+                onClick={() => setSelectedCategory('Дитяча')}
               >
                 Дитячі
               </button>
@@ -159,7 +165,7 @@ const Catalog = () => {
               <select
                 id="sort-price"
                 value={sortOrder}
-                onChange={(event) => setSortOrder(event.target.value)}
+                onChange={event => setSortOrder(event.target.value)}
               >
                 <option value="default">За замовчуванням</option>
                 <option value="price-asc">Від дешевих до дорогих</option>
@@ -191,7 +197,7 @@ const Catalog = () => {
 
             {!loading && !error && products.length > 0 && (
               <div className="catalog-page__grid">
-                {sortedProducts.map((product) => (
+                {sortedProducts.map(product => (
                   <article className="catalog-product" key={product._id}>
                     <Link
                       to={`/products/${product._id}`}
@@ -229,7 +235,7 @@ const Catalog = () => {
 
                       <div className="catalog-product__bottom">
                         <strong>
-                          {product.price.toLocaleString("uk-UA")} грн
+                          {product.price.toLocaleString('uk-UA')} грн
                         </strong>
 
                         <Link

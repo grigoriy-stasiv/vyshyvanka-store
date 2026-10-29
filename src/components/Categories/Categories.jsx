@@ -4,48 +4,48 @@ function Categories() {
   const categories = [
     {
       id: 1,
-      title: "Жіночі",
-      description: "Вишиванки для жінок",
-      image: "/images/category-women.jpg",
+      title: 'Жіночі',
+      value: 'Жіноча',
+      description: 'Вишиванки для жінок',
+      image: '/images/category-women.jpg',
     },
     {
       id: 2,
-      title: "Чоловічі",
-      description: "Вишиванки для чоловіків",
-      image: "/images/category-men.jpg",
+      title: 'Чоловічі',
+      value: 'Чоловіча',
+      description: 'Вишиванки для чоловіків',
+      image: '/images/category-men.jpg',
     },
     {
       id: 3,
-      title: "Дитячі",
-      description: "Вишиванки для дітей",
-      image: "/images/category-kids.jpg",
+      title: 'Дитячі',
+      value: 'Дитяча',
+      description: 'Вишиванки для дітей',
+      image: '/images/category-kids.jpg',
     },
   ];
 
   return (
     <section className="categories">
       <div className="categories__container">
-
         <div className="categories__heading">
           <div className="categories__subtitle">
             <span></span>
             Обери свою
           </div>
 
-          <h2 className="categories__title">
-            Категорії
-          </h2>
+          <h2 className="categories__title">Категорії</h2>
 
           <p className="categories__description">
-            Традиційні українські мотиви у сучасному дизайні.
-            Обери вишиванку, яка підійде саме тобі.
+            Традиційні українські мотиви у сучасному дизайні. Обери вишиванку,
+            яка підійде саме тобі.
           </p>
         </div>
 
         <div className="categories__grid">
-          {categories.map((category) => (
+          {categories.map(category => (
             <a
-              href="/catalog"
+              href={`/catalog?category=${encodeURIComponent(category.value)}`}
               className="category-card"
               key={category.id}
             >
@@ -62,9 +62,7 @@ function Categories() {
                   {category.description}
                 </span>
 
-                <h3 className="category-card__title">
-                  {category.title}
-                </h3>
+                <h3 className="category-card__title">{category.title}</h3>
 
                 <span className="category-card__link">
                   Переглянути
@@ -74,7 +72,6 @@ function Categories() {
             </a>
           ))}
         </div>
-
       </div>
     </section>
   );

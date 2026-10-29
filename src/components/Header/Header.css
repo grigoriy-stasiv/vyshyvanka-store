@@ -142,6 +142,22 @@
   transform: translateY(-2px);
 }
 
+.header__favorite svg {
+  display: block;
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: #9b1c31;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.header__favorite:hover svg {
+  fill: #9b1c31;
+  stroke: #9b1c31;
+}
+
 .header__action > span:not(.header__cart-count) {
   font-size: 27px;
   line-height: 1;
