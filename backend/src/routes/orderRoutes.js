@@ -214,6 +214,36 @@ router.patch(
   },
 );
 
+router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        message: 'Некоректний ID замовлення',
+      });
+    }
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        message: 'Замовлення не знайдено',
+      });
+    }
+
+    await Order.deleteOne({ _id: order._id });
+
+    res.json({
+      message: 'Замовлення успішно видалено',
+    });
+  } catch (error) {
+    console.error('Помилка видалення замовлення адміністратором:', error);
+
+    res.status(500).json({
+      message: 'Не вдалося видалити замовлення',
+    });
+  }
+});
+
 router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const orders = await Order.find()

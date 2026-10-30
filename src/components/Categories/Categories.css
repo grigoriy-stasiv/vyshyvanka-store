@@ -9,8 +9,6 @@
     padding: 0 60px;
 }
 
-/* HEADING */
-
 .categories__heading {
     max-width: 650px;
     margin-bottom: 50px;
@@ -69,6 +67,7 @@
     position: relative;
     display: block;
     overflow: hidden;
+    border-radius: 30px;
     color: #ffffff;
 }
 
