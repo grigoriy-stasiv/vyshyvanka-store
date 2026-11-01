@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const reviewRoutes = require('./routes/reviewRoutes');
 
 const app = express();
 
@@ -30,5 +31,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/upload", uploadRoutes);
 
 app.use("/api/orders", orderRoutes);
+
+app.use('/api/reviews', reviewRoutes);
 
 module.exports = app;

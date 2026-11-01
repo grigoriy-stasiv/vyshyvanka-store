@@ -1,13 +1,16 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
-import { useAuth } from "../../context/AuthContext";
-import { useEffect, useState } from "react";
-import "./Header.css";
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
+import { useFavorites } from '../../context/FavoritesContext';
+import { useEffect, useState } from 'react';
+import './Header.css';
 
 function Header() {
   const { cartCount } = useCart();
   const { user, logout } = useAuth();
+  const { favoritesCount } = useFavorites();
   const location = useLocation();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [newOrdersCount, setNewOrdersCount] = useState(0);
   const [cancelledOrdersCount, setCancelledOrdersCount] = useState(0);
@@ -17,7 +20,7 @@ function Header() {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!user || user.role !== "admin") {
+    if (!user || user.role !== 'admin') {
       setNewOrdersCount(0);
       setCancelledOrdersCount(0);
       return;
@@ -27,9 +30,9 @@ function Header() {
 
     const loadNewOrdersCount = async () => {
       try {
-        const token = localStorage.getItem("vyshyvanka-token");
+        const token = localStorage.getItem('vyshyvanka-token');
 
-        const response = await fetch("http://localhost:5000/api/orders", {
+        const response = await fetch('http://localhost:5000/api/orders', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -41,19 +44,18 @@ function Header() {
 
         if (isActive && Array.isArray(orders)) {
           setNewOrdersCount(
-            orders.filter((order) => order.status === "Нове" && !order.isRead)
+            orders.filter(order => order.status === 'Нове' && !order.isRead)
               .length,
           );
 
           setCancelledOrdersCount(
             orders.filter(
-              (order) =>
-                order.status === "Скасоване" && order.cancellationUnread,
+              order => order.status === 'Скасоване' && order.cancellationUnread,
             ).length,
           );
         }
       } catch (error) {
-        console.error("Помилка завантаження нових замовлень:", error);
+        console.error('Помилка завантаження нових замовлень:', error);
       }
     };
 
@@ -70,7 +72,7 @@ function Header() {
   const closeMenu = () => setMenuOpen(false);
 
   const getNavClass = ({ isActive }) =>
-    isActive ? "header__nav-link header__nav-link--active" : "header__nav-link";
+    isActive ? 'header__nav-link header__nav-link--active' : 'header__nav-link';
 
   return (
     <header className="header">
@@ -166,19 +168,31 @@ function Header() {
         </nav>
 
         <div className="header__actions">
-          <button className="header__action" aria-label="Пошук" type="button">
+          <button
+            className="header__action"
+            aria-label="Пошук"
+            type="button"
+            onClick={() => {
+              closeMenu();
+              navigate('/catalog?focusSearch=true');
+            }}
+          >
             <span>⌕</span>
           </button>
 
-          <button
+          <NavLink
+            to="/favorites"
             className="header__action header__favorite"
-            aria-label="Обране"
-            type="button"
+            aria-label={`Обране, товарів: ${favoritesCount}`}
+            onClick={closeMenu}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
             </svg>
-          </button>
+            {favoritesCount > 0 && (
+              <span className="header__favorite-count">{favoritesCount}</span>
+            )}
+          </NavLink>
 
           {user && (
             <span className="header__user header__desktop-user">

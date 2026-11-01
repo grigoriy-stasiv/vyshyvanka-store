@@ -35,6 +35,10 @@ function Admin() {
   const [showUsers, setShowUsers] = useState(false);
   const [userSearch, setUserSearch] = useState("");
   const [userRoleFilter, setUserRoleFilter] = useState("Усі");
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState('');
+  const [showReviews, setShowReviews] = useState(false);
   const [productForm, setProductForm] = useState({
     name: "",
     category: "Жіноча",
@@ -196,6 +200,66 @@ function Admin() {
 
       loadUsers();
     }, [loading, user]);
+
+  
+  const loadReviews = async () => {
+    try {
+      setReviewsLoading(true);
+      setReviewsError('');
+
+      const token = localStorage.getItem('vyshyvanka-token');
+
+      const response = await fetch('http://localhost:5000/api/reviews', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Не вдалося завантажити відгуки');
+      }
+
+      setReviews(data.reviews || []);
+    } catch (error) {
+      setReviewsError(error.message);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const handleDeleteReview = async reviewId => {
+    const confirmed = window.confirm('Ви справді хочете видалити цей відгук?');
+
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem('vyshyvanka-token');
+
+      const response = await fetch(
+        `http://localhost:5000/api/reviews/${reviewId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Не вдалося видалити відгук');
+      }
+
+      setReviews(current => current.filter(review => review._id !== reviewId));
+
+      alert('Відгук успішно видалено');
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
   if (loading) {
     return <div className="admin-loading">Завантаження...</div>;
@@ -731,6 +795,26 @@ function Admin() {
                   : 'Переглянути користувачів'}
               </button>
             </div>
+            <div className="admin-dashboard__card">
+              <span className="admin-dashboard__icon">⭐</span>
+
+              <h2>Відгуки</h2>
+
+              <p>Перегляд та видалення відгуків клієнтів.</p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!showReviews) {
+                    loadReviews();
+                  }
+
+                  setShowReviews(current => !current);
+                }}
+              >
+                {showReviews ? 'Сховати відгуки' : 'Керувати відгуками'}
+              </button>
+            </div>
           </div>
 
           {showOrders && (
@@ -996,6 +1080,69 @@ function Admin() {
                     </div>
                   )}
                 </>
+              )}
+            </section>
+          )}
+
+          {showReviews && (
+            <section className="admin-reviews">
+              <div className="admin-reviews__header">
+                <div>
+                  <span className="admin-reviews__label">ВІДГУКИ КЛІЄНТІВ</span>
+                  <h2>Відгуки покупців</h2>
+                </div>
+
+                <strong>Усього: {reviews.length}</strong>
+              </div>
+
+              {reviewsLoading && <p>Завантаження відгуків...</p>}
+
+              {reviewsError && (
+                <p className="admin-page__error">{reviewsError}</p>
+              )}
+
+              {!reviewsLoading && !reviewsError && (
+                <div className="admin-reviews__list">
+                  {reviews.length === 0 ? (
+                    <p>Відгуків поки немає.</p>
+                  ) : (
+                    reviews.map(review => (
+                      <article className="admin-review" key={review._id}>
+                        <div className="admin-review__info">
+                          <h3>{review.user?.name || 'Користувач'}</h3>
+
+                          <p>
+                            Товар: {review.product?.name || 'Товар видалено'}
+                          </p>
+
+                          <p className="admin-review__stars">
+                            Оцінка:{' '}
+                            <span>{'★'.repeat(Number(review.rating))}</span>
+                            <span style={{ color: '#d8d2ca' }}>
+                              {'★'.repeat(5 - Number(review.rating))}
+                            </span>
+                          </p>
+
+                          <p>{review.text}</p>
+
+                          <small>
+                            {new Date(review.createdAt).toLocaleDateString(
+                              'uk-UA',
+                            )}
+                          </small>
+
+                          <button
+                            type="button"
+                            className="admin-review__delete"
+                            onClick={() => handleDeleteReview(review._id)}
+                          >
+                            Видалити відгук
+                          </button>
+                        </div>
+                      </article>
+                    ))
+                  )}
+                </div>
               )}
             </section>
           )}

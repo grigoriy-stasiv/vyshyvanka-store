@@ -203,6 +203,83 @@
     color: #ffffff;
 }
 
+
+/* Форма відгуку */
+
+.reviews__form {
+  max-width: 650px;
+  margin: 35px auto 0;
+  padding: 35px;
+  background: #ffffff;
+  border: 1px solid #e7e1da;
+}
+
+.reviews__form-title {
+  margin: 0 0 25px;
+  color: #171923;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.reviews__form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 20px;
+}
+
+.reviews__form-group label {
+  color: #555861;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.reviews__form-group select,
+.reviews__form-group textarea {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid #d8d2ca;
+  background: #fff;
+  color: #171923;
+  font: inherit;
+  outline: none;
+}
+
+.reviews__form-group select:focus,
+.reviews__form-group textarea:focus {
+  border-color: #9b1c31;
+}
+
+.reviews__form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.reviews__form-stars {
+  display: flex;
+  gap: 8px;
+}
+
+.reviews__form-stars button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #d8d2ca;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.reviews__form-stars button.active {
+  color: #9b1c31;
+}
+
+.reviews__form-message {
+  margin: 0 0 15px;
+  color: #9b1c31;
+  font-size: 14px;
+}
+
 /* Планшет */
 
 @media (max-width: 900px) {
@@ -260,4 +337,12 @@
     .reviews__rating-number {
         font-size: 40px;
     }
+
+    .reviews__form {
+    padding: 25px 20px;
+  }
+
+  .reviews__form-title {
+    font-size: 26px;
+  }
 }

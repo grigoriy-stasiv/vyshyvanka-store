@@ -19,6 +19,7 @@ import Register from "./pages/Register/Register";
 import Admin from "./pages/Admin/Admin";
 import MyOrders from "./pages/MyOrders/MyOrders";
 import Profile from './pages/Profile/Profile';
+import Favorites from './pages/Favorites/Favorites';
 
 const HomePage = () => {
   return (
@@ -60,6 +61,8 @@ const App = () => {
       <Route path="/my-orders" element={<MyOrders />} />
 
       <Route path="/profile" element={<Profile />} />
+
+      <Route path="/favorites" element={<Favorites />} />
     </Routes>
   );
 };

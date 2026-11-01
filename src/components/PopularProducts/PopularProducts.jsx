@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useFavorites } from '../../context/FavoritesContext';
 import './PopularProducts.css';
 
 const PopularProducts = () => {
@@ -9,7 +10,7 @@ const PopularProducts = () => {
   const [error, setError] = useState('');
   const [notification, setNotification] = useState('');
   const [isClosing, setIsClosing] = useState(false);
-  const [favoriteProducts, setFavoriteProducts] = useState([]);
+  const { isFavorite, toggleFavorite } = useFavorites();
   const navigate = useNavigate();
   const { addToCart } = useCart();
 
@@ -70,7 +71,7 @@ const PopularProducts = () => {
     return (
       <section className="popular-products">
         <div className="popular-products__container">
-                <p>Завантаження товарів...</p>
+          <p>Завантаження товарів...</p>
         </div>
       </section>
     );
@@ -131,27 +132,17 @@ const PopularProducts = () => {
                 <button
                   className="product-card__favorite"
                   aria-label={
-                    favoriteProducts.includes(product._id)
+                    isFavorite(product._id)
                       ? 'Видалити з обраного'
                       : 'Додати в обране'
                   }
-                  onClick={() => {
-                    setFavoriteProducts(prev =>
-                      prev.includes(product._id)
-                        ? prev.filter(id => id !== product._id)
-                        : [...prev, product._id],
-                    );
-                  }}
+                  onClick={() => toggleFavorite(product._id)}
                 >
                   <svg
                     viewBox="0 0 24 24"
                     width="23"
                     height="23"
-                    fill={
-                      favoriteProducts.includes(product._id)
-                        ? '#9b1c31'
-                        : 'none'
-                    }
+                    fill={isFavorite(product._id) ? '#9b1c31' : 'none'}
                     stroke="currentColor"
                     strokeWidth="1.7"
                     strokeLinecap="round"

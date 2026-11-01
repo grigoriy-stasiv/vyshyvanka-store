@@ -1,10 +1,8 @@
 .header {
   width: 100%;
   height: 82px;
-
   background: #ffffff;
   border-bottom: 1px solid #eeeeee;
-
   position: relative;
   z-index: 10;
 }
@@ -20,24 +18,22 @@
   justify-content: space-between;
 }
 
-/* LOGO */
-
+/* ==========================================================================
+   LOGO
+   ========================================================================== */
 .header__logo {
   display: flex;
   align-items: center;
   gap: 12px;
-
   color: #171923;
 }
 
 .header__logo-icon {
   width: 42px;
   height: 42px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   color: #9b1c31;
   font-size: 36px;
 }
@@ -49,7 +45,6 @@
 
 .header__logo-text strong {
   font-family: Georgia, "Times New Roman", serif;
-
   font-size: 25px;
   font-weight: 500;
   letter-spacing: 2px;
@@ -57,15 +52,14 @@
 
 .header__logo-text small {
   margin-top: 3px;
-
   font-size: 9px;
   letter-spacing: 2px;
-
   color: #555;
 }
 
-/* NAVIGATION */
-
+/* ==========================================================================
+   NAVIGATION
+   ========================================================================== */
 .header__nav {
   height: 100%;
   display: flex;
@@ -75,15 +69,11 @@
 
 .header__nav-link {
   height: 100%;
-
   display: flex;
   align-items: center;
-
   position: relative;
-
   color: #222;
   font-size: 16px;
-
   transition: color 0.25s ease;
 }
 
@@ -97,112 +87,98 @@
 
 .header__nav-link--active::after {
   content: "";
-
   position: absolute;
   bottom: 15px;
   left: 0;
-
   width: 100%;
   height: 2px;
-
   background: #9b1c31;
 }
 
-/* ACTIONS */
-
+/* ==========================================================================
+   ACTIONS (Кошик та Вибране) — ГЛОБАЛЬНІ СТИЛІ ДЛЯ ВСІХ ЕКРАНІВ
+   ========================================================================== */
 .header__actions {
   display: flex;
   align-items: center;
   gap: 22px;
 }
 
-.header__action {
+/* Спільний базовий клас для обох кнопок-посилань */
+.header__action,
+.header__cart {
   width: 32px;
   height: 32px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   position: relative;
-
   background: transparent;
   border: none;
-
   color: #171923;
   cursor: pointer;
-
-  transition:
-    color 0.25s ease,
-    transform 0.25s ease;
+  text-decoration: none;
+  transition: color 0.25s ease, transform 0.25s ease;
 }
 
-.header__action:hover {
-  color: #9b1c31;
+.header__action:hover,
+.header__cart:hover {
   transform: translateY(-2px);
 }
 
-.header__favorite svg {
-  display: block;
-  width: 23px;
-  height: 23px;
-  fill: none;
-  stroke: #9b1c31;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.header__favorite:hover svg {
-  fill: #9b1c31;
-  stroke: #9b1c31;
-}
-
-.header__action > span:not(.header__cart-count) {
-  font-size: 27px;
-  line-height: 1;
-}
-
-.header__cart {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-}
-
+/* Уніфікована стилізація SVG для серця та кошика */
+.header__favorite svg,
 .header__cart-icon {
   display: block;
   width: 22px;
   height: 22px;
+  fill: none !important;        /* Примусово прибираємо будь-яку внутрішню заливку */
+  stroke: #9b1c31 !important;   /* Чіткий однаковий бордовий контур */
+  stroke-width: 1.8 !important; /* Однакова товщина ліній */
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.25s ease;
 }
 
-.header__cart-count {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  min-width: 21px;
-  height: 21px;
-  padding: 0 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  border-radius: 50%;
-  background: #9b1c31;
-  color: #ffffff;
-  border: 2px solid #ffffff;
-  font-family: Arial, sans-serif;
-  font-size: 11px;
-  font-weight: 700;
+/* Однаковий ефект наведення для обох іконок */
+.header__action:hover svg,
+.header__cart:hover .header__cart-icon {
+  stroke: #b6253e !important;  /* Зміна кольору контуру при наведенні */
+}
+
+.header__action > span:not(.header__cart-count):not(.header__favorite-count) {
+  font-size: 27px;
   line-height: 1;
-  z-index: 5;
 }
 
-/* ==============================
-   AUTH
-   ============================== */
+/* Ідентичні лічильники для кошика та вибраного */
+.header__cart-count,
+.header__favorite-count {
+  position: absolute !important;
+  top: -8px !important;
+  right: -8px !important;
+  min-width: 21px !important;
+  height: 21px !important;
+  padding: 0 5px !important;
+  display: flex !important;    /* Гарантуємо блочну модель флексу */
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  border-radius: 50% !important;
+  background: #9b1c31 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  z-index: 5 !important;
+  white-space: nowrap !important;
+}
 
+/* ==========================================================================
+   AUTH
+   ========================================================================== */
 .header__user {
   color: #555;
   font-size: 14px;
@@ -263,80 +239,64 @@
   margin-left: 4px;
 }
 
-/* TABLET */
+/* ==========================================================================
+   MEDIA QUERIES (Адаптивність)
+   ========================================================================== */
 
+/* TABLET */
 @media (max-width: 1000px) {
   .header__container {
     padding: 0 30px;
   }
-
   .header__nav {
     gap: 25px;
   }
-
   .header__logo-text strong {
     font-size: 21px;
   }
 }
 
 /* MOBILE */
-
 @media (max-width: 750px) {
   .header {
     height: auto;
   }
-
   .header__container {
     min-height: 75px;
     padding: 15px 20px;
-
     flex-wrap: wrap;
     gap: 15px;
   }
-
   .header__nav {
     order: 3;
-
     width: 100%;
     height: 45px;
-
     justify-content: center;
-
     gap: 20px;
-
     overflow-x: auto;
   }
-
   .header__nav-link {
     height: 45px;
     white-space: nowrap;
   }
-
   .header__nav-link--active::after {
     bottom: 0;
   }
-
   .header__logo-text strong {
     font-size: 18px;
   }
-
   .header__logo-text small {
     font-size: 7px;
   }
-
   .header__logo-icon {
     font-size: 28px;
   }
-
   .header__actions {
     gap: 8px;
   }
 }
 
-/* =========================================
-   БУРГЕР-МЕНЮ ДЛЯ ПЛАНШЕТІВ І ТЕЛЕФОНІВ
-========================================= */
-
+/* БУРГЕР-МЕНЮ ДЛЯ ПЛАНШЕТІВ І ТЕЛЕФОНІВ */
 .header__burger {
   display: none;
   width: 42px;
@@ -359,9 +319,7 @@
   height: 2px;
   border-radius: 2px;
   background: #9b1c31;
-  transition:
-    transform 0.25s ease,
-    opacity 0.2s ease;
+  transition: transform 0.25s ease, opacity 0.2s ease;
 }
 
 .header__burger--open span:first-child {
@@ -381,13 +339,12 @@
   display: none;
 }
 
-/* Планшет і телефон */
+/* Планшет і телефон (менше 900px) */
 @media (max-width: 900px) {
   .header {
     position: relative;
     z-index: 1000;
   }
-
   .header__container {
     position: relative;
     display: flex;
@@ -399,22 +356,18 @@
     padding-left: 20px;
     padding-right: 20px;
   }
-
   .header__logo {
     flex-shrink: 1;
     min-width: 0;
   }
-
   .header__logo-text strong {
     font-size: 17px;
     letter-spacing: 2px;
   }
-
   .header__logo-text small {
     font-size: 8px;
     letter-spacing: 1px;
   }
-
   .header__nav {
     display: none;
     position: absolute;
@@ -432,11 +385,9 @@
     background: #fff;
     box-shadow: 0 12px 24px rgb(30 20 20 / 12%);
   }
-
   .header__nav--open {
     display: flex;
   }
-
   .header__nav .header__nav-link,
   .header__nav .header__admin-link,
   .header__nav .header__login {
@@ -447,11 +398,9 @@
     border-bottom: 1px solid #f0e8e5;
     font-size: 15px;
   }
-
   .header__nav .header__nav-link--active {
     color: #9b1c31;
   }
-
   .header__nav .header__mobile-account {
     display: flex;
     flex-direction: column;
@@ -459,7 +408,6 @@
     gap: 12px;
     padding: 18px 4px 4px;
   }
-
   .header__nav .header__mobile-account .header__logout {
     display: inline-flex;
     align-items: center;
@@ -467,61 +415,21 @@
     min-height: 40px;
     padding: 10px 18px;
   }
-
   .header__nav .header__mobile-login {
     display: flex;
   }
-
   .header__actions {
     display: flex;
     align-items: center;
     gap: 10px;
     flex-shrink: 0;
   }
-
   .header__desktop-user,
   .header__desktop-logout,
   .header__desktop-login {
     display: none !important;
   }
-
   .header__burger {
     display: flex;
-  }
-}
-
-/* Маленькі телефони */
-@media (max-width: 480px) {
-  .header__container {
-    gap: 8px;
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  .header__logo-icon {
-    margin-right: 5px;
-  }
-
-  .header__logo-text strong {
-    font-size: 14px;
-    letter-spacing: 1.5px;
-  }
-
-  .header__logo-text small {
-    font-size: 7px;
-    letter-spacing: 0.5px;
-  }
-
-  .header__actions {
-    gap: 7px;
-  }
-
-  .header__actions > .header__action:not(.header__cart) {
-    display: none;
-  }
-
-  .header__burger {
-    width: 38px;
-    height: 38px;
   }
 }
