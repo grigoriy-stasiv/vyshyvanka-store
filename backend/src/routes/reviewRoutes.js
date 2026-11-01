@@ -45,20 +45,51 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get('/admin', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const reviews = await Review.find()
+      .populate('user', 'name email')
+      .populate('product', 'name')
+      .sort({ createdAt: -1 });
 
-// Get products that the current user can review
+    res.json({ reviews });
+  } catch (error) {
+    console.error('Помилка отримання всіх відгуків:', error);
+
+    res.status(500).json({
+      message: 'Не вдалося отримати всі відгуки',
+    });
+  }
+});
+
+
 router.get("/eligible", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
 
     const completedOrders = await Order.find({
       customer: userId,
-      status: "Виконане",
-    }).populate("items.product", "name");
+      status: 'Виконане',
+    }).populate('items.product', 'name');
+
+    console.log('ID користувача:', userId);
+    console.log('Знайдені виконані замовлення:', completedOrders.length);
+    console.log('Замовлення:', JSON.stringify(completedOrders, null, 2));
 
     const reviewedProducts = await Review.find({
       user: userId,
     }).distinct("product");
+
+    const allUserReviews = await Review.find({
+      user: userId,
+    }).select('product rating comment createdAt');
+
+    console.log('Усі відгуки користувача:', allUserReviews);
+
+    console.log(
+      'Товари, на які вже залишено відгуки:',
+      reviewedProducts.map(id => id.toString()),
+    );
 
     const reviewedIds = new Set(
       reviewedProducts.map((id) => id.toString())
@@ -216,7 +247,6 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-// Delete review (admin only)
 router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { id } = req.params;

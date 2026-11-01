@@ -12,7 +12,34 @@ function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [error, setError] = useState("");
+  const [eligibleProducts, setEligibleProducts] = useState([]);
 
+  const loadEligibleProducts = async () => {
+    try {
+      const token = localStorage.getItem('vyshyvanka-token');
+
+      const response = await fetch(
+        'http://localhost:5000/api/reviews/eligible',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || 'Не вдалося завантажити доступні відгуки',
+        );
+      }
+console.log('Доступні товари для відгуку:', data);
+      setEligibleProducts(data);
+    } catch (error) {
+      console.error('Помилка завантаження доступних відгуків:', error);
+    }
+  };
   
 const handleDeleteOrder = async (orderId) => {
   const confirmed = window.confirm(
@@ -142,6 +169,7 @@ useEffect(() => {
   };
 
   loadOrders(true);
+  loadEligibleProducts();
 
   const intervalId = setInterval(() => {
     loadOrders();
@@ -181,26 +209,27 @@ useEffect(() => {
 
           {!ordersLoading &&
             !error &&
-            orders.map((order) => (
+            orders.map(order => (
               <article className="my-order" key={order._id}>
                 <div className="my-order__header">
                   <h2>Замовлення №{order._id.slice(-6)}</h2>
                   <span
-  className={`my-order__status my-order__status--${{
-    "Нове": "new",
-    "Підтверджене": "confirmed",
-    "Відправлене": "shipped",
-    "Виконане": "completed",
-    "Скасоване": "cancelled",
-  }[order.status] || "new"}`}
->
-  {order.status}
-</span>
+                    className={`my-order__status my-order__status--${
+                      {
+                        Нове: 'new',
+                        Підтверджене: 'confirmed',
+                        Відправлене: 'shipped',
+                        Виконане: 'completed',
+                        Скасоване: 'cancelled',
+                      }[order.status] || 'new'
+                    }`}
+                  >
+                    {order.status}
+                  </span>
                 </div>
 
                 <p className="my-order__date">
-                  Дата:{" "}
-                  {new Date(order.createdAt).toLocaleString("uk-UA")}
+                  Дата: {new Date(order.createdAt).toLocaleString('uk-UA')}
                 </p>
 
                 <div className="my-order__items">
@@ -209,18 +238,32 @@ useEffect(() => {
                       className="my-order__item"
                       key={`${order._id}-${index}`}
                     >
-                      {item.image && (
-                        <img src={item.image} alt={item.name} />
-                      )}
+                      {item.image && <img src={item.image} alt={item.name} />}
 
                       <div className="my-order__item-info">
                         <h3>{item.name}</h3>
                         {item.size && <p>Розмір: {item.size}</p>}
                         {item.color && <p>Колір: {item.color}</p>}
                         <p>Кількість: {item.quantity}</p>
-                        <strong>
-                          {item.price * item.quantity} грн
-                        </strong>
+                        <strong>{item.price * item.quantity} грн</strong>
+                        {order.status === 'Виконане' &&
+                          eligibleProducts.some(
+                            product =>
+                              product._id.toString() ===
+                              (item.product?._id || item.product)?.toString(),
+                          ) && (
+                            <button
+                              type="button"
+                              className="my-order__review"
+                              onClick={() => {
+                                window.alert(
+                                  'Наступним кроком додамо форму відгуку.',
+                                );
+                              }}
+                            >
+                              Залишити відгук
+                            </button>
+                          )}
                       </div>
                     </div>
                   ))}
@@ -231,28 +274,25 @@ useEffect(() => {
                   <strong>{order.totalAmount} грн</strong>
                 </div>
 
-                
-{order.status === "Нове" && (
-  <button
-    type="button"
-    className="my-order__cancel"
-    onClick={() => handleCancelOrder(order._id)}
-  >
-    Скасувати замовлення
-  </button>
-)}
+                {order.status === 'Нове' && (
+                  <button
+                    type="button"
+                    className="my-order__cancel"
+                    onClick={() => handleCancelOrder(order._id)}
+                  >
+                    Скасувати замовлення
+                  </button>
+                )}
 
-                
-{["Виконане", "Скасоване"].includes(order.status) && (
-  <button
-    type="button"
-    className="my-order__delete"
-    onClick={() => handleDeleteOrder(order._id)}
-  >
-    Видалити замовлення
-  </button>
-)}
-
+                {['Виконане', 'Скасоване'].includes(order.status) && (
+                  <button
+                    type="button"
+                    className="my-order__delete"
+                    onClick={() => handleDeleteOrder(order._id)}
+                  >
+                    Видалити замовлення
+                  </button>
+                )}
               </article>
             ))}
         </div>

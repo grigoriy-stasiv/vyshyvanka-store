@@ -85,8 +85,8 @@ function Footer() {
             </h3>
 
             <div className="footer__contacts">
-              <a href="tel:+380000000000">
-                +38 (000) 000-00-00
+              <a href="tel:+380971073262">
+                +38 (097) 107-32-62
               </a>
 
               <a href="mailto:info@vyshyvanka.ua">

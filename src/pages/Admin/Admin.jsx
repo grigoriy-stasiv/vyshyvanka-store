@@ -209,7 +209,7 @@ function Admin() {
 
       const token = localStorage.getItem('vyshyvanka-token');
 
-      const response = await fetch('http://localhost:5000/api/reviews', {
+      const response = await fetch('http://localhost:5000/api/reviews/admin', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
